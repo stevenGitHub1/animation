@@ -24,12 +24,12 @@
 @property (nonatomic, strong) UIImage *highLightImage;
 @property (nonatomic, strong) UIImage *arrowImage;
 @property (nonatomic, strong) UIImage *cursorImage;
-@property (nonatomic, assign, getter=isAnimating) BOOL animating;
 
 @property (nonatomic, strong) NSTimer *animatingStopTimer;
 @property (nonatomic, assign) NSTimeInterval time;
 @property (nonatomic, assign) NSTimeInterval beginTime;
 @property (nonatomic, strong) CALayer *animateLayer;
+@property (nonatomic, assign) NSInteger moreThanOnce;
 @end
 
 @implementation TGASupportAnimateView
@@ -47,20 +47,17 @@ NSString * const kStarAnimationKey = @"TGASupportStarAnimationKey";
         [self addCheerDynamicEffect];
         [self pause];
         [self demoStart];
-        
     }
     return self;
 }
 
 - (void)demoStart {
-    __block NSTimer *tmp = [NSTimer timerWithTimeInterval:.5f target:self selector:@selector(play) userInfo:nil repeats:YES];
+    __block NSTimer *tmp = [NSTimer timerWithTimeInterval:1.5f target:self selector:@selector(play) userInfo:nil repeats:YES];
     [[NSRunLoop currentRunLoop] addTimer:tmp forMode:NSRunLoopCommonModes];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(8.f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [tmp invalidate];
         tmp = nil;
-        
-
     });
 }
 
@@ -68,32 +65,45 @@ NSString * const kStarAnimationKey = @"TGASupportStarAnimationKey";
     [self play];
 }
 
-- (void)startAnimatingTimer {
+- (void)invalidateAnimatingTimer {
     [_animatingStopTimer invalidate];
     _animatingStopTimer = nil;
+}
+
+- (void)startAnimatingTimer {
+    [self invalidateAnimatingTimer];
     
-    _animatingStopTimer = [NSTimer timerWithTimeInterval:DURATION target:self selector:@selector(pause) userInfo:nil repeats:NO];
+    _moreThanOnce++;
+    CGFloat time = DURATION-_time;
+    if (_moreThanOnce > 1) {
+        time+=DURATION;
+    }
+    
+    _animatingStopTimer = [NSTimer timerWithTimeInterval:time target:self selector:@selector(pause) userInfo:nil repeats:NO];
     [[NSRunLoop currentRunLoop] addTimer:_animatingStopTimer forMode:NSRunLoopCommonModes];
 }
 
 - (void)pause {
     NSLog(@"%f, %f", _time, _beginTime);
-    [_animatingStopTimer invalidate];
-    _animatingStopTimer = nil;
+    _moreThanOnce = 0;
+    [self invalidateAnimatingTimer];
     
     _starLayer.opacity = 0.f;
     _highLightImageLayer.opacity = 0.f;
-    _cursorLayer.opacity = 0.f;
     
-    CFTimeInterval pausedTime = [_arrowLayer convertTime:CACurrentMediaTime() fromLayer:nil];
-    _arrowLayer.speed = 0.f;
-    _arrowLayer.timeOffset = pausedTime;
+    CFTimeInterval pausedTime = [_animateLayer convertTime:CACurrentMediaTime() fromLayer:nil];
+    _animateLayer.speed = 0.f;
+    _animateLayer.timeOffset = pausedTime;
     
-    _leftLayer.speed = 0.f;
-    _leftLayer.timeOffset = pausedTime;
-    
-    _cursorLayer.speed = 0.f;
-    _cursorLayer.timeOffset = pausedTime;
+//    CFTimeInterval pausedTime = [_arrowLayer convertTime:CACurrentMediaTime() fromLayer:nil];
+//    _arrowLayer.speed = 0.f;
+//    _arrowLayer.timeOffset = pausedTime;
+//
+//    _leftLayer.speed = 0.f;
+//    _leftLayer.timeOffset = pausedTime;
+//
+//    _cursorLayer.speed = 0.f;
+//    _cursorLayer.timeOffset = pausedTime;
 }
 
 - (void)play {
@@ -102,29 +112,36 @@ NSString * const kStarAnimationKey = @"TGASupportStarAnimationKey";
         _starLayer.opacity = 1.f;
         _highLightImageLayer.opacity = 1.f;
         
-        CFTimeInterval pausedTime = [_arrowLayer timeOffset];
-        _arrowLayer.speed = 1.0;
-        _arrowLayer.timeOffset = 0.0;
-        _arrowLayer.beginTime = 0.0;
-        CFTimeInterval timeSincePause = [_arrowLayer convertTime:CACurrentMediaTime() fromLayer:nil] - pausedTime;
-        _arrowLayer.beginTime = timeSincePause;
+        CFTimeInterval pausedTime = [_animateLayer timeOffset];
+        _animateLayer.speed = 1.0;
+        _animateLayer.timeOffset = 0.0;
+        _animateLayer.beginTime = 0.0;
+        CFTimeInterval timeSincePause = [_animateLayer convertTime:CACurrentMediaTime() fromLayer:nil] - pausedTime;
+        _animateLayer.beginTime = timeSincePause;
         
-        _leftLayer.speed = 1.0;
-        _leftLayer.timeOffset = 0.0;
-        _leftLayer.beginTime = 0.0;
-        _leftLayer.beginTime = timeSincePause;
-        
-        _cursorLayer.opacity = 1.f;
-        _cursorLayer.speed = 1.0;
-        _cursorLayer.timeOffset = 0.0;
-        _cursorLayer.beginTime = 0.0;
-        _cursorLayer.beginTime = timeSincePause;
+//        CFTimeInterval pausedTime = [_arrowLayer timeOffset];
+//        _arrowLayer.speed = 1.0;
+//        _arrowLayer.timeOffset = 0.0;
+//        _arrowLayer.beginTime = 0.0;
+//        CFTimeInterval timeSincePause = [_arrowLayer convertTime:CACurrentMediaTime() fromLayer:nil] - pausedTime;
+//        _arrowLayer.beginTime = timeSincePause;
+//
+//        _leftLayer.speed = 1.0;
+//        _leftLayer.timeOffset = 0.0;
+//        _leftLayer.beginTime = 0.0;
+//        _leftLayer.beginTime = timeSincePause;
+//
+//        _cursorLayer.opacity = 1.f;
+//        _cursorLayer.speed = 1.0;
+//        _cursorLayer.timeOffset = 0.0;
+//        _cursorLayer.beginTime = 0.0;
+//        _cursorLayer.beginTime = timeSincePause;
     }
     
     _time = [_animateLayer convertTime:CACurrentMediaTime() fromLayer:nil]-_beginTime;
     NSInteger integer = (NSInteger)_time;
     CGFloat floa = _time-integer;
-    integer = integer%2;
+    integer = integer%DURATION;
     _time = integer+floa;
     
     [self startAnimatingTimer];
@@ -149,50 +166,37 @@ NSString * const kStarAnimationKey = @"TGASupportStarAnimationKey";
 }
 
 - (void)initLayer {
-    _imageLayer = [CALayer layer];
-    _imageLayer.contents = (id)_image.CGImage;
-    _imageLayer.contentsScale = _image.scale;
+    _imageLayer = [self layerWithImage:_image];
     _imageLayer.contentsCenter = CGRectMake(0.25, 0.25, 0.5, 0.5);
     
-    _maskLayer = [CALayer layer];
-    _maskLayer.contents = (id)_image.CGImage;
-    _maskLayer.contentsScale = _image.scale;
+    _maskLayer = [self layerWithImage:_image];
+    _maskLayer.contentsCenter = CGRectMake(0.25, 0.25, 0.5, 0.5);
     
-    _starLayer = [CALayer layer];
-    _starLayer.contents = (id)_starImage.CGImage;
-    _starLayer.contentsScale = _starImage.scale;
+    _starLayer = [self layerWithImage:_starImage];
     
-    _highLightImageLayer = [CALayer layer];
-    _highLightImageLayer.contents = (id)_highLightImage.CGImage;
-    _highLightImageLayer.contentsScale = _highLightImage.scale;
+    _highLightImageLayer = [self layerWithImage:_highLightImage];
     
     _animateLayer = [CALayer layer];
     
-    _arrowLayer = [CALayer layer];
-    _arrowLayer.contents = (id)_arrowImage.CGImage;
-    _arrowLayer.contentsScale = _arrowImage.scale;
+    _arrowLayer = [self layerWithImage:_arrowImage];
     _arrowLayer.frame = CGRectMake(0, 0, _maxWidth, 9);
     
-    _leftLayer = [CALayer layer];
-    _leftLayer.contents = (id)_arrowImage.CGImage;
-    _leftLayer.contentsScale = _arrowImage.scale;
+    _leftLayer = [self layerWithImage:_arrowImage];
     _leftLayer.frame = CGRectMake(-_maxWidth, 0, _maxWidth, 9);
     
     UIImage *cursorImage = [UIImage imageNamed:@"左边扫光@3x(1)"];
-    _cursorLayer = [CALayer layer];
-    _cursorLayer.contents = (id)cursorImage.CGImage;
-    _cursorLayer.contentsScale = cursorImage.scale;
+    _cursorLayer = [self layerWithImage:cursorImage];
     _cursorLayer.frame = CGRectMake(-cursorImage.size.width, 0, cursorImage.size.width, cursorImage.size.height);
     
     [_animateLayer addSublayer:_leftLayer];
     [_animateLayer addSublayer:_arrowLayer];
     [_animateLayer addSublayer:_cursorLayer];
+    [_animateLayer setMask:_maskLayer];
     
     [self.layer addSublayer:_starLayer];
     [self.layer addSublayer:_imageLayer];
     [self.layer addSublayer:_highLightImageLayer];
     [self.layer addSublayer:_animateLayer];
-//    [contentLayer setMask:_maskLayer];
 }
 
 - (void)addCheerDynamicEffect {
@@ -233,6 +237,13 @@ NSString * const kStarAnimationKey = @"TGASupportStarAnimationKey";
     UIImage *drawImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return drawImage;
+}
+
+- (CALayer *)layerWithImage:(UIImage *)image {
+    CALayer *tmp = [CALayer layer];
+    tmp.contents = (id)image.CGImage;
+    tmp.contentsScale = image.scale;
+    return tmp;
 }
 
 - (void)layoutSubviews {

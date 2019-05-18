@@ -20,6 +20,9 @@
 @end
 
 @implementation ViewController
+- (IBAction)remove:(id)sender {
+    [_duolei removeFromSuperview];
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
