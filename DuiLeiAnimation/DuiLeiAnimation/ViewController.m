@@ -93,7 +93,7 @@
     
     
     
-    TGASupportAnimateView *animateView = [[TGASupportAnimateView alloc] initWithFrame:CGRectMake(100, 100, 100, 9) viewMode:TGASupportAnimateViewLeftMode maxWidth:300 image:nil];
+    TGASupportAnimateView *animateView = [[TGASupportAnimateView alloc] initWithFrame:CGRectMake(100, 100, 100, 9) viewMode:TGASupportAnimateViewLeftMode maxWidth:160 image:nil];
     _normalWidth=100;
     animateView.userInteractionEnabled = YES;
     [self.view addSubview:animateView];

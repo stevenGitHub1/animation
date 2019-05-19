@@ -6,7 +6,7 @@
 //  Copyright © 2019 Tencent. All rights reserved.
 //
 
-#define DURATION 4
+#define DURATION 2
 
 #import "TGASupportAnimateView.h"
 
@@ -91,19 +91,19 @@ NSString * const kStarAnimationKey = @"TGASupportStarAnimationKey";
     _starLayer.opacity = 0.f;
     _highLightImageLayer.opacity = 0.f;
     
-    CFTimeInterval pausedTime = [_animateLayer convertTime:CACurrentMediaTime() fromLayer:nil];
-    _animateLayer.speed = 0.f;
-    _animateLayer.timeOffset = pausedTime;
+//    CFTimeInterval pausedTime = [_animateLayer convertTime:CACurrentMediaTime() fromLayer:nil];
+//    _animateLayer.speed = 0.f;
+//    _animateLayer.timeOffset = pausedTime;
     
-//    CFTimeInterval pausedTime = [_arrowLayer convertTime:CACurrentMediaTime() fromLayer:nil];
-//    _arrowLayer.speed = 0.f;
-//    _arrowLayer.timeOffset = pausedTime;
-//
-//    _leftLayer.speed = 0.f;
-//    _leftLayer.timeOffset = pausedTime;
-//
-//    _cursorLayer.speed = 0.f;
-//    _cursorLayer.timeOffset = pausedTime;
+    CFTimeInterval pausedTime = [_arrowLayer convertTime:CACurrentMediaTime() fromLayer:nil];
+    _arrowLayer.speed = 0.f;
+    _arrowLayer.timeOffset = pausedTime;
+
+    _leftLayer.speed = 0.f;
+    _leftLayer.timeOffset = pausedTime;
+
+    _cursorLayer.speed = 0.f;
+    _cursorLayer.timeOffset = pausedTime;
 }
 
 - (void)play {
@@ -112,30 +112,30 @@ NSString * const kStarAnimationKey = @"TGASupportStarAnimationKey";
         _starLayer.opacity = 1.f;
         _highLightImageLayer.opacity = 1.f;
         
-        CFTimeInterval pausedTime = [_animateLayer timeOffset];
-        _animateLayer.speed = 1.0;
-        _animateLayer.timeOffset = 0.0;
-        _animateLayer.beginTime = 0.0;
-        CFTimeInterval timeSincePause = [_animateLayer convertTime:CACurrentMediaTime() fromLayer:nil] - pausedTime;
-        _animateLayer.beginTime = timeSincePause;
+//        CFTimeInterval pausedTime = [_animateLayer timeOffset];
+//        _animateLayer.speed = 1.0;
+//        _animateLayer.timeOffset = 0.0;
+//        _animateLayer.beginTime = 0.0;
+//        CFTimeInterval timeSincePause = [_animateLayer convertTime:CACurrentMediaTime() fromLayer:nil] - pausedTime;
+//        _animateLayer.beginTime = timeSincePause;
         
-//        CFTimeInterval pausedTime = [_arrowLayer timeOffset];
-//        _arrowLayer.speed = 1.0;
-//        _arrowLayer.timeOffset = 0.0;
-//        _arrowLayer.beginTime = 0.0;
-//        CFTimeInterval timeSincePause = [_arrowLayer convertTime:CACurrentMediaTime() fromLayer:nil] - pausedTime;
-//        _arrowLayer.beginTime = timeSincePause;
-//
-//        _leftLayer.speed = 1.0;
-//        _leftLayer.timeOffset = 0.0;
-//        _leftLayer.beginTime = 0.0;
-//        _leftLayer.beginTime = timeSincePause;
-//
-//        _cursorLayer.opacity = 1.f;
-//        _cursorLayer.speed = 1.0;
-//        _cursorLayer.timeOffset = 0.0;
-//        _cursorLayer.beginTime = 0.0;
-//        _cursorLayer.beginTime = timeSincePause;
+        CFTimeInterval pausedTime = [_arrowLayer timeOffset];
+        _arrowLayer.speed = 1.0;
+        _arrowLayer.timeOffset = 0.0;
+        _arrowLayer.beginTime = 0.0;
+        CFTimeInterval timeSincePause = [_arrowLayer convertTime:CACurrentMediaTime() fromLayer:nil] - pausedTime;
+        _arrowLayer.beginTime = timeSincePause;
+
+        _leftLayer.speed = 1.0;
+        _leftLayer.timeOffset = 0.0;
+        _leftLayer.beginTime = 0.0;
+        _leftLayer.beginTime = timeSincePause;
+
+        _cursorLayer.opacity = 1.f;
+        _cursorLayer.speed = 1.0;
+        _cursorLayer.timeOffset = 0.0;
+        _cursorLayer.beginTime = 0.0;
+        _cursorLayer.beginTime = timeSincePause;
     }
     
     _time = [_animateLayer convertTime:CACurrentMediaTime() fromLayer:nil]-_beginTime;
@@ -224,7 +224,7 @@ NSString * const kStarAnimationKey = @"TGASupportStarAnimationKey";
     
     CABasicAnimation *scaleAnimation = [CABasicAnimation animationWithKeyPath:@"bounds"];
     scaleAnimation.toValue = [NSValue valueWithCGRect:CGRectMake(0, 0, _starImage.size.width*1.3, _starImage.size.height*1.3)];
-    scaleAnimation.duration = DURATION/3;
+    scaleAnimation.duration = DURATION/2;
     scaleAnimation.autoreverses = YES;
     scaleAnimation.repeatCount = NSIntegerMax;
     [_starLayer addAnimation:scaleAnimation forKey:kStarAnimationKey];
